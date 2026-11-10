@@ -1,0 +1,12 @@
+# 第 13 天安全红线：严禁将本地私钥、助记词、.env 凭证、本地链钱包或虚拟环境打包进 Docker 镜像
+.venv/
+.localnet/
+__pycache__/
+*.pyc
+.env
+*.pem
+*.key
+wallets/
+.bittensor/
+.git/
+solutions/

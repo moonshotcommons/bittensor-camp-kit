@@ -1,0 +1,49 @@
+# 第 13 天配套编排：Docker Compose 部署与密钥只读安全挂载
+# 启动命令（在 camp-kit 根目录执行）：
+#   docker compose -f arena/day13_docker/docker-compose.yml up -d
+
+services:
+  camp-miner:
+    build:
+      context: ../..
+      dockerfile: arena/day13_docker/Dockerfile
+    container_name: bittensor-camp-miner
+    restart: unless-stopped
+    ports:
+      - "8091:8091"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - BT_NETWORK=ws://host.docker.internal:9944
+      - BT_WALLET_PATH=/root/.bittensor/wallets
+    # 🔒 安全红线：仅以只读（:ro）方式挂载矿工所需的单个热密钥、冷钥公钥与子网编号，冷密钥私钥绝不进容器
+    volumes:
+      - ../../.localnet/wallets/miner/hotkeys/default:/root/.bittensor/wallets/miner/hotkeys/default:ro
+      - ../../.localnet/wallets/miner/coldkeypub.txt:/root/.bittensor/wallets/miner/coldkeypub.txt:ro
+      - ../../.localnet/netuid:/app/.localnet/netuid:ro
+
+    # 💡 若在算力子网（如 Chutes / Lium / RunPod）需要 NVIDIA GPU，取消下方注释：
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  camp-monitor:
+    build:
+      context: ../..
+      dockerfile: arena/day13_docker/Dockerfile
+    container_name: bittensor-camp-monitor
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - BT_NETWORK=ws://host.docker.internal:9944
+      - BT_WALLET_PATH=/root/.bittensor/wallets
+    command: ["python", "arena/day11_validator/uid_monitor.py", "--rounds", "0", "--interval", "12"]
+    volumes:
+      - ../../.localnet/wallets/miner/hotkeys/default:/root/.bittensor/wallets/miner/hotkeys/default:ro
+      - ../../.localnet/wallets/miner/coldkeypub.txt:/root/.bittensor/wallets/miner/coldkeypub.txt:ro
+      - ../../.localnet/netuid:/app/.localnet/netuid:ro

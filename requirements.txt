@@ -1,0 +1,8 @@
+# Bittensor 共学营依赖
+# 注意：只装 bittensor（含 SDK + btcli 11.x + bittensor-wallet）
+# 千万不要装旧的独立包 bittensor-cli（PyPI 最新 9.23.2，会把 btcli 降回 9.x）
+bittensor>=11.3.0
+rich>=13.0.0
+openpyxl>=3.1.0
+ipykernel>=6.29.0
+jupyterlab>=4.0.0
